@@ -91,7 +91,7 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
         scope.dropAreaHover = false;
         scope.file = undefined;
         scope.fileError = false;
-        scope.dropText = base64FileUploadConfig.dropText || 'Klik hier om een bestand te uploaden';
+        scope.dropText = base64FileUploadConfig.dropText || 'Click here or drop files to upload';
 
         var dropArea = element.find('.base64-file--drop-area')[0];
         var inputField = element.find('.base64-file--input')[0];
