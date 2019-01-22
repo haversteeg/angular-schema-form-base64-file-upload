@@ -51,7 +51,7 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
         scope.dropAreaHover = false;
         scope.file = undefined;
         scope.fileError = false;
-        scope.dropText = base64FileUploadConfig.dropText || 'Click here or drop files to upload';
+        scope.dropText = base64FileUploadConfig.dropText || 'Klik hier om een bestand te uploaden';
 
         var dropArea = element.find('.base64-file--drop-area')[0];
         var inputField = element.find('.base64-file--input')[0];
@@ -60,11 +60,9 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
         var imageField = element.find('img.base64-file--file-preview')[0];
 
         $timeout(function() {
-          if(imageField.getAttribute('base64-file-fetch').startsWith("1/")) {
-            scope.hasFile = true;
-          } else {
-            scope.hasFile = false;
-          }
+          var base64Key = imageField.attributes['base64-file-fetch'].value;
+          var hasValue = base64Key.match(/(jpeg|jpg|png|JPEG|JPG|PNG)/);
+          scope.hasFile = (hasValue) ? true : false;
         }, 0);
 
         $(imageField).on('load', function () {
@@ -86,7 +84,7 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
           scope.$apply();
 
           return valid;
-        }
+        };
 
 
         var getFile = function(file) {
@@ -111,7 +109,6 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
             scope.addProfilePicture(image)
           }
 
-
           // just a simple conversion to human readable size.
           // For now not bothering with large sizes.
           var fileSize = file.size / 1024;
@@ -127,7 +124,7 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
             $timeout(function() {
               scope.loadingFile = true;
             }, 0);
-          }
+          };
 
           reader.onload = function(e) {
             $timeout(function() {
@@ -135,27 +132,26 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
             }, 0);
 
             var prefix = 'file:' + file.name + ';';
+            scope.$emit('caren.questionnaires.requestAwsKey', e.target.result, addAWSKeyToRequest);
             ngModel.$setViewValue(prefix + e.target.result);
           };
 
           reader.readAsDataURL(file);
-          // reader.result;
           scope.$apply();
+          scope.removeDoubleImages()
+        };
 
-          $timeout(function() {
-            var file_previews = document.getElementsByClassName("base64-file--file-preview");
-            var arrayLength = file_previews.length;
-            for (var preview = 0; preview < arrayLength; preview++) {
-              if (file_previews[preview]) {
-                var base64 = file_previews[preview].getAttribute('base64-file-fetch');
-                if (base64 != null && (base64.startsWith("data") || base64.startsWith("file")) == true) {
-                  file_previews[preview].remove()
-                }
+        scope.removeDoubleImages = function() {
+          var file_previews = document.getElementsByClassName("base64-file--file-preview");
+          var arrayLength = file_previews.length;
+          for (var preview = 0; preview < arrayLength; preview++) {
+            if (file_previews[preview]) {
+              var base64 = file_previews[preview].getAttribute('base64-file-fetch');
+              if (base64 != null && (base64.startsWith("data") || base64.startsWith("file")) == true) {
+                file_previews[preview].remove()
               }
             }
-          }, 0);
-
-
+          }
         };
 
         scope.addProfilePicture = function(file) {
@@ -187,6 +183,14 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
           }
         };
 
+        var addAWSKeyToRequest = function(e) {
+          if(e.endsWith('.jpg') || e.endsWith('.JPG') || e.endsWith('.jpeg') || e.endsWith('.JPEG') || e.endsWith('.png') || e.endsWith('.PNG')) {
+            // Calling this method here is kinda slow, this results in showing the double image for about 2 seconds
+            scope.removeDoubleImages();
+            ngModel.$setViewValue(e);
+          }
+        };
+
         scope.addFile = function(file) {
           scope.hasFile = true;
           ngModel.$setViewValue(file);
@@ -199,7 +203,7 @@ angular.module('angularSchemaFormBase64FileUpload').directive('base64FileUpload'
         var clickArea = function(e) {
           e.stopPropagation();
           inputField.click();
-        }
+        };
 
         var dragOver = function(e) {
           e.preventDefault();
